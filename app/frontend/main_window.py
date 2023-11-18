@@ -22,11 +22,14 @@ class MainWindow(QWidget):
         update_tables_button = QPushButton("update")
         update_tables_button.clicked.connect(self.update_tables_list)
 
-        self.create_entry_button = None
+        self.create_entry_button = QPushButton("create")
+        self.create_entry_button.clicked.connect(self.create_entry_manager_for_create)
+        self.create_entry_button.hide()
 
         self.left_vbox.addWidget(update_tables_button)
         self.left_vbox.addWidget(self.tables_list)
         self.right_vbox.addWidget(self.entries_table)
+        self.right_vbox.addWidget(self.create_entry_button)
         self.hbox.addLayout(self.left_vbox)
         self.hbox.addLayout(self.right_vbox)
 
@@ -39,9 +42,14 @@ class MainWindow(QWidget):
 
     @QtCore.Slot()
     def update_tables_list(self) -> None:
-        tables = self.database.get_tables()
+        try:
+            tables = self.database.get_tables()
+        except ValueError as e:
+            self.request_error(str(e))
+            return
         self.tables_list.update_list(tables)
         self.entries_table.clear_table()
+        self.create_entry_button.hide()
 
     @QtCore.Slot(QtCore.QModelIndex)
     def update_entries_table(self, table: QtCore.QModelIndex) -> None:
@@ -109,10 +117,7 @@ class MainWindow(QWidget):
             self.request_error(str(e))
             return
         self.entries_table.update_table(table_name, headers, entries)
-        if not self.create_entry_button:
-            self.create_entry_button = QPushButton("create")
-            self.create_entry_button.clicked.connect(self.create_entry_manager_for_create)
-        self.right_vbox.addWidget(self.create_entry_button)
+        self.create_entry_button.show()
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         if self.entry_manager:
