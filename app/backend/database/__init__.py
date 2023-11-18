@@ -1,3 +1,4 @@
+import os
 from PySide6 import QtSql
 from typing import Any
 
@@ -5,11 +6,11 @@ from typing import Any
 class Database:
     def __init__(self) -> None:
         self.db = QtSql.QSqlDatabase.addDatabase("QPSQL")
-        self.db.setHostName("31.31.202.46")
-        self.db.setPort(5433)
-        self.db.setDatabaseName("lab_db")
-        self.db.setUserName("service_account")
-        self.db.setPassword("SEq5H0l&63")
+        self.db.setHostName(os.environ["DB_HOSTNAME"])
+        self.db.setPort(int(os.environ["DB_PORT"]))
+        self.db.setDatabaseName(os.environ["DB_NAME"])
+        self.db.setUserName(os.environ["DB_USERNAME"])
+        self.db.setPassword(os.environ["DB_PASSWORD"])
         ok = self.db.open()
         if not ok:
             raise ConnectionError
