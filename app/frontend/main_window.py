@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Dict
 
 from PySide6 import QtCore, QtGui
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QTableView, QMessageBox
@@ -33,6 +33,7 @@ class MainWindow(QWidget):
         self.setLayout(self.hbox)
 
         self.tables_list.doubleClicked.connect(self.update_entries_table)
+        self.entries_table.select_data_signal.connect(self.create_entry_manager_for_update)
 
         self.database = database.Database() 
 
@@ -49,18 +50,17 @@ class MainWindow(QWidget):
 
     @QtCore.Slot()
     def create_entry_manager_for_create(self) -> None:
-        headers = self.entries_table.model().get_headers()
+        headers = self.entries_table.headers
         self.entry_manager = EntryManager(
             fields={h: "" for h in headers},
             buttons={"create": self.create_entry}
         )
         self.entry_manager.show()
 
-    @QtCore.Slot()
-    def create_entry_manager_for_update(self) -> None:
-        headers = self.entries_table.headers
+    @QtCore.Slot(object)
+    def create_entry_manager_for_update(self, fields: dict[str, Any]) -> None:
         self.entry_manager = EntryManager(
-            fields={h: "" for h in headers},
+            fields=fields,
             buttons={"delete": self.delete_entry, "update": self.update_entry}
         )
         self.entry_manager.show()
@@ -72,23 +72,42 @@ class MainWindow(QWidget):
         try:
             self.database.create_entry(table=table_name, values=new_fields)
         except ValueError as e:
-            QMessageBox.warning(self, "Request error", str(e), QMessageBox.Ok, QMessageBox.Ok)
+            self.request_error(str(e))
             return
         self.update_entries_table_by_table_name(table_name)
 
     @QtCore.Slot()
     def update_entry(self) -> None:
-        print("update entry!")
+        table_name = self.tables_list.table_name
+        old_fields = self.entry_manager.old_fields
+        new_fields = self.entry_manager.new_fields
+        try:
+            self.database.update_entry(table=table_name, old_values=old_fields, new_values=new_fields)
+        except ValueError as e:
+            self.request_error(str(e))
+            return
+        self.update_entries_table_by_table_name(table_name)
 
     @QtCore.Slot()
     def delete_entry(self) -> None:
-        print("delete entry!")
+        table_name = self.tables_list.table_name
+        old_fields = self.entry_manager.old_fields
+        try:
+            self.database.delete_entry(table=table_name, values=old_fields)
+        except ValueError as e:
+            self.request_error(str(e))
+            return
+        self.update_entries_table_by_table_name(table_name)
 
     def update_entries_table_by_table_name(self, table_name: str) -> None:
         self.entry_manager = None
 
-        headers = self.database.get_columns(table_name)
-        entries = self.database.get_entries(table_name)
+        try:
+            headers = self.database.get_columns(table_name)
+            entries = self.database.get_entries(table_name)
+        except ValueError as e:
+            self.request_error(str(e))
+            return
         self.entries_table.update_table(table_name, headers, entries)
         if not self.create_entry_button:
             self.create_entry_button = QPushButton("create")
@@ -98,3 +117,6 @@ class MainWindow(QWidget):
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         if self.entry_manager:
             self.entry_manager.close()
+
+    def request_error(self, error: str) -> None:
+        QMessageBox.warning(self, "Request error", str(error), QMessageBox.Ok, QMessageBox.Ok)

@@ -7,7 +7,10 @@ from PySide6 import QtCore
 class EntryManager(QWidget):
     def __init__(self, fields: dict[str, Any], buttons: dict[str, Callable]):
         super().__init__()
-        self.setWindowTitle("Entry Manager")
+        window_title = "Entry Manager"
+        if "id" in fields:
+            window_title = f"Entry Manager id={fields['id']}"
+        self.setWindowTitle(window_title)
 
         self._old_fields = fields
 
@@ -18,7 +21,7 @@ class EntryManager(QWidget):
         for name, value in fields.items():
             hbox = QHBoxLayout()
             label = QLabel(name)
-            line_edit = QLineEdit(value)
+            line_edit = QLineEdit(str(value))
             self._widget_fields[label] = line_edit
             hbox.addWidget(label)
             hbox.addWidget(line_edit)
