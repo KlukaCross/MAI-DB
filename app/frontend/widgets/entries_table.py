@@ -64,7 +64,7 @@ class TableModel(QAbstractTableModel):
     def data(self, index: Union[QtCore.QModelIndex, QtCore.QPersistentModelIndex], role: int = ...) -> Any:
         if role == Qt.DisplayRole:
             value = self._data[index.row()][index.column()]
-            return str(value)
+            return value
 
     def rowCount(self, parent: Union[QtCore.QModelIndex, QtCore.QPersistentModelIndex] = ...) -> int:
         return len(self._data)

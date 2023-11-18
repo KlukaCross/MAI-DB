@@ -17,7 +17,8 @@ class Database:
 
     def _check(self, func, *args):
         if not func(*args):
-            raise ValueError(func.__self__.lastError())
+            msg = str(func.__self__.lastError()).split("DETAIL:")[1].split("\\n")[0]
+            raise ValueError(msg)
 
     def get_tables(self) -> list[str]:
         query = QtSql.QSqlQuery("""
@@ -34,7 +35,11 @@ class Database:
         query = QtSql.QSqlQuery(f"select * from {table}", db=self.db)
         result = []
         while query.next():
-            result.append([query.value(index) for index in range(query.record().count())])
+            result.append([
+                query.value(index)
+                for index in range(query.record().count()) 
+                # if type(query.value(index))
+            ])
         return result
 
     def get_columns(self, table: str) -> list[str]:
@@ -44,20 +49,31 @@ class Database:
 
     def create_entry(self, table: str, values: dict[str, Any]) -> None:
         query = QtSql.QSqlQuery(db=self.db)
-        new = ','.join([f"'{value}'" for value in values.values()])
-        query.prepare(f"insert into {table} ({','.join(values.keys())}) values ({new})")
+        keys = values.keys()
+        query.prepare(f"insert into {table} ({','.join(keys)}) values ({','.join(['?'] * len(keys))})")
+        for key in keys:
+            query.addBindValue(values[key])
         self._check(query.exec)
 
     def update_entry(self, table: str, old_values: dict[str, Any], new_values: dict[str, Any]) -> None:
         query = QtSql.QSqlQuery(db=self.db)
-        new = ','.join([f"{key}='{new_values[key]}'" for key in new_values.keys()])
-        old = ','.join([f"{key}='{old_values[key]}'" for key in old_values.keys()])
+        new_keys = new_values.keys()
+        old_keys = old_values.keys()
+        new = ','.join([f"{key}=?" for key in new_keys])
+        old = ' and '.join([f"{key}=?" for key in old_keys])
         query.prepare(f"update {table} set {new} where {old}")
+        for key in new_keys:
+            query.addBindValue(new_values[key])
+        for key in old_keys:
+            query.addBindValue(old_values[key])
         self._check(query.exec)
 
     def delete_entry(self, table: str, values: dict[str, Any]) -> None:
         query = QtSql.QSqlQuery(db=self.db)
-        condition = ','.join([f"{key}='{values[key]}'" for key in values.keys()])
+        keys = values.keys()
+        condition = ' and '.join([f"{key}=?" for key in keys])
         query.prepare(f"delete from {table} where {condition}")
+        for key in keys:
+            query.addBindValue(values[key])
         self._check(query.exec)
 
