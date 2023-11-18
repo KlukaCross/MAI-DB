@@ -4,7 +4,7 @@ from PySide6 import QtCore
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QTableView
 
 from app.frontend.widgets import TablesList, EntriesTable, EntryManager
-from app.backend import handlers
+from app.backend import database
 
 
 class MainWindow(QWidget):
@@ -34,16 +34,18 @@ class MainWindow(QWidget):
 
         self.tables_list.doubleClicked.connect(self.update_entries_table)
 
+        self.database = database.Database() 
+
     @QtCore.Slot()
     def update_tables_list(self) -> None:
-        tables = handlers.get_tables()
+        tables = self.database.get_tables()
         self.tables_list.update_list(tables)
 
     @QtCore.Slot(QtCore.QModelIndex)
     def update_entries_table(self, table: QtCore.QModelIndex) -> None:
         table_name = table.data()
-        headers = handlers.get_columns(table_name)
-        entries = handlers.get_entries(table_name)
+        headers = self.database.get_columns(table_name)
+        entries = self.database.get_entries(table_name)
         self.entries_table.update_table(table_name, headers, entries)
         if not self.create_entry_button:
             self.create_entry_button = QPushButton("create")
