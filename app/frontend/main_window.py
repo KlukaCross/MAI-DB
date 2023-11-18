@@ -30,8 +30,8 @@ class MainWindow(QWidget):
         self.left_vbox.addWidget(self.tables_list)
         self.right_vbox.addWidget(self.entries_table)
         self.right_vbox.addWidget(self.create_entry_button)
-        self.hbox.addLayout(self.left_vbox)
-        self.hbox.addLayout(self.right_vbox)
+        self.hbox.addLayout(self.left_vbox, 1)
+        self.hbox.addLayout(self.right_vbox, 3)
 
         self.setLayout(self.hbox)
 
