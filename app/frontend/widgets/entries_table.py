@@ -24,6 +24,10 @@ class EntriesTable(QTableView):
     def clear_table(self) -> None:
         self.setModel(TableModel())
 
+    @property
+    def headers(self) -> list[str]:
+        return self.model().get_headers()
+
 
 class TableDelegate(QAbstractItemDelegate):
     def __init__(self):

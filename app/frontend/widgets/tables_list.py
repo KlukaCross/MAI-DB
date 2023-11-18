@@ -9,3 +9,7 @@ class TablesList(QListWidget):
         self.clear()
         for item in items:
             self.addItem(QListWidgetItem(item))
+
+    @property
+    def table_name(self) -> str:
+        return self.selectedItems()[0].text()
