@@ -4,10 +4,16 @@
 
 ```bash
 pip install poetry
-poetry install
+make install
 ```
+
+## Установка переменных окружения
+```bash
+make env
+```
+Настроить файл `.env`.
 
 ## Запуск
 ```bash
-poetry run python3 -m app
+make run
 ```
