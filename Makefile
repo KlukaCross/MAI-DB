@@ -36,7 +36,7 @@ help: ##@Help Show this help
 	@perl -e '$(HELP_FUN)' $(MAKEFILE_LIST)
 
 open-db:  ##@Database Open database
-	psql -d $(DB_NAME) -U $(DB_USERNAME) -p $(DB_PORT)
+	PGPASSWORD=${DB_PASSWORD} psql -U $(DB_USERNAME) -h ${DB_HOSTNAME} -p $(DB_PORT) ${DB_NAME}
 
 %::
 	echo $(MESSAGE)
