@@ -17,7 +17,8 @@ class Database:
 
     def _check(self, func, *args):
         if not func(*args):
-            msg = str(func.__self__.lastError()).split("DETAIL:")[1].split("\\n")[0]
+            err = func.__self__.lastError()
+            msg = err.databaseText()
             raise ValueError(msg)
 
     def get_tables(self) -> list[str]:
@@ -49,6 +50,8 @@ class Database:
 
     def create_entry(self, table: str, values: dict[str, Any]) -> None:
         query = QtSql.QSqlQuery(db=self.db)
+        if 'id' in values and not values['id']:
+            values.pop('id')
         keys = values.keys()
         query.prepare(f"insert into {table} ({','.join(keys)}) values ({','.join(['?'] * len(keys))})")
         for key in keys:
