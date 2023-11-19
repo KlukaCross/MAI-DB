@@ -76,7 +76,7 @@ class MainWindow(QWidget):
     @QtCore.Slot()
     def create_entry(self) -> None:
         table_name = self.tables_list.table_name
-        new_fields = self.entry_manager.new_fields
+        new_fields = {k: v for k, v in self.entry_manager.new_fields.items() if v}
         try:
             self.database.create_entry(table=table_name, values=new_fields)
         except ValueError as e:
@@ -87,8 +87,10 @@ class MainWindow(QWidget):
     @QtCore.Slot()
     def update_entry(self) -> None:
         table_name = self.tables_list.table_name
-        old_fields = self.entry_manager.old_fields
-        new_fields = self.entry_manager.new_fields
+        old_fields = {k: v for k, v in self.entry_manager.old_fields.items() if v}
+        new_fields = {k: v for k, v in self.entry_manager.new_fields.items() if v}
+        if 'id' in new_fields:
+            new_fields.pop('id')
         try:
             self.database.update_entry(table=table_name, old_values=old_fields, new_values=new_fields)
         except ValueError as e:
@@ -99,7 +101,7 @@ class MainWindow(QWidget):
     @QtCore.Slot()
     def delete_entry(self) -> None:
         table_name = self.tables_list.table_name
-        old_fields = self.entry_manager.old_fields
+        old_fields = {k: v for k, v in self.entry_manager.old_fields.items() if v}
         try:
             self.database.delete_entry(table=table_name, values=old_fields)
         except ValueError as e:

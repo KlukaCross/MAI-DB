@@ -22,6 +22,8 @@ class EntryManager(QWidget):
             hbox = QHBoxLayout()
             label = QLabel(name)
             line_edit = QLineEdit(str(value))
+            if name == 'id':
+                line_edit.setEnabled(False)
             self._widget_fields[label] = line_edit
             hbox.addWidget(label)
             hbox.addWidget(line_edit)
