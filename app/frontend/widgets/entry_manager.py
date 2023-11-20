@@ -21,6 +21,8 @@ class EntryManager(QWidget):
         for name, value in fields.items():
             hbox = QHBoxLayout()
             label = QLabel(name)
+            if isinstance(value, QtCore.QDateTime):
+                value = value.toString()
             line_edit = QLineEdit(str(value))
             if name == 'id':
                 line_edit.setEnabled(False)
